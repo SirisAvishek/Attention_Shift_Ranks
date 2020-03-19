@@ -1,5 +1,10 @@
 # Inferring Attention Shift Ranks of Objects for Image Saliency [To appear in CVPR 2020]
 
+### Authors:
+Avishek Siris, Jianbo Jiao, Gary K.L. Tam, Xianghua Xie, Rynson W.H. Lau
+
+PDF:
+Supplemental:
 
 <p align="center">
 <img src="https://github.com/SirisAvishek/Inferring-Attention-Shift-Ranks/blob/master/images/saliency_rank_data_compare.png" width="800"/>
