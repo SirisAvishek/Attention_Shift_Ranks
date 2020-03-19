@@ -2,7 +2,7 @@
 
 
 <p align="center">
-<img src="https://github.com/ssiRiss/Inferring-Attention-Shift-Ranks/blob/master/images/saliency_rank_data_compare.png" width="800"/>
+<img src="https://github.com/SirisAvishek/Inferring-Attention-Shift-Ranks/blob/master/images/saliency_rank_data_compare.png" width="800"/>
 </p>
 
 We propose a new large-scale saliency rank dataset from attention shift, motivated by psychological and behavioural studies, and justified by our user study.
