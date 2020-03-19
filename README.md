@@ -2,7 +2,7 @@
 
 
 <p align="center">
-<img src="" width="800"/>
+<img src="https://github.com/ssiRiss/Inferring-Attention-Shift-Ranks/blob/master/images/saliency_rank_data_compare.png" width="800"/>
 </p>
 
 
