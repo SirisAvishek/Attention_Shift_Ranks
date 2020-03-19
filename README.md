@@ -17,10 +17,10 @@ Psychology studies and behavioural observation show that humans shift their atte
 
 
 ## Coming Soon
-Code,
-Dataset,
-Results,
-User Study Data
++ Code
++ Dataset
++ Results
++ User Study Data
 
 
 
