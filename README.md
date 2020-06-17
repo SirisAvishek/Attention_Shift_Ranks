@@ -25,7 +25,7 @@ Download our dataset from [google drive](https://drive.google.com/file/d/1ueSpf3
 ## Training 
 The current implementation and results are based on pre-computing backbone and object features, then training the rest of the saliency rank model seperately. 
 
-1. Pre-train backbone for salient object detection (binary, no ranking). Download pre-trained COCO weights (mask_rcnn_coco.h5) from matterport, https://github.com/matterport/Mask_RCNN/releases. Put the weight file in the "weights/" folder. Set data paths and run:
+1. Pre-train backbone for salient object detection (binary, no ranking). Download pre-trained COCO weights (mask_rcnn_coco.h5) from matterport, https://github.com/matterport/Mask_RCNN/releases. Create a new "weights/" folder in the root directory, then put the weight file inside it. Set data paths and run:
 ```
 python obj_sal_seg_branch/train.py
 ```
