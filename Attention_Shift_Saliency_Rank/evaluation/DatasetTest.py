@@ -72,6 +72,9 @@ class DatasetTest(object):
             rois = d["rois"]
             # class_ids = d["class_ids"]
             scores = d["scores"]
+            
+            if image_id not in self.img_ids:
+                continue
 
             num_good_objects = sum(s > OBJ_THRESH for s in scores)
 
@@ -84,7 +87,7 @@ class DatasetTest(object):
             # self.class_ids.append(class_ids[:keep_point])
             # self.scores.append(scores[:keep_point])
 
-        assert self.img_ids == self.image_id
+        # assert self.img_ids == self.image_id
 
     def load_rank_order_data(self, rank_order_root):
         rank_order_data_files = [f for f in os.listdir(rank_order_root)]
@@ -115,6 +118,10 @@ class DatasetTest(object):
         obj_seg = []
         for i in range(len(data)):
             img_data = data[i]
+            
+            image_id = img_data["img"]
+            if image_id not in self.img_ids:
+                continue            
 
             img_obj_data = img_data["object_data"]
 
