@@ -43,7 +43,8 @@ python train.py
 ## Testing
 Similarly to training, we need to pre-compute features.
 
-1. Perform object detection. Set data paths and run:
+1. Perform object detection. You can download the pre-trained weights from [google drive](https://drive.google.com/file/d/1CuaokkhhiS2TjkzTxMOeJCEQU9E2bGYs/view?usp=sharing). 
+Set data paths and run:
 ```
 python pre_process/object_detection.py
 ```
