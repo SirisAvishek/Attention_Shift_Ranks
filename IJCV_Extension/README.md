@@ -40,6 +40,9 @@ To evaluate nDCG score, set data paths and run:
 python evaluate_nDCG.py
 ```
 
+## Results
+You can download predicted Saliency Rank Maps by our trained model from [google drive](https://drive.google.com/file/d/1w6WL8sQ5cARU_rVCOYVCp6_v2ysZDpn0/view?usp=drive_link).
+
 # Citation
 ```
 @article{siris2023inferring,
