@@ -199,24 +199,19 @@ def build_saliency_rank_model(config, mode, train_mode=None):
                 detection_boxes, object_feat, target_roi_gt_boxes, target_ranks])
 
         # *********************** PROCESS Image/P5 FEATURES ***********************
-        dropout = 0.5
-
-        _, P3, P4, P5 = backbone_feat
-
-        p3_pooled = KL.GlobalAveragePooling2D()(P3)
-        p4_pooled = KL.GlobalAveragePooling2D()(P4)
-        p5_pooled = KL.GlobalAveragePooling2D()(P5)
-
-        img_feat = KL.Concatenate()([p3_pooled, p4_pooled, p5_pooled])
-
-        img_feat = KL.Dense(config.BOTTLE_NECK_SIZE, name="img_feat_dense_1")(img_feat)
+        img_feat = KL.Conv2D(config.BOTTLE_NECK_SIZE, (3, 3), name="img_feat_conv_1")(P5)
         img_feat = BatchNorm(name="img_feat_bn_1")(img_feat, training=config.TRAIN_BN)
         img_feat = KL.Activation('relu')(img_feat)
-        img_feat = KL.Dropout(dropout)(img_feat)
+
+        img_feat = KL.GlobalAveragePooling2D()(img_feat)
 
         # -------------------------
+
+        # -64 for concatenation with spatial masks
+        reduc_dim = config.BOTTLE_NECK_SIZE - 64
+
         # Reduce dimension to BOTTLNECK
-        obj_feature = KL.TimeDistributed(KL.Conv2D(config.BOTTLE_NECK_SIZE, (1, 1)), name="obj_feat_reduce_conv1")(
+        obj_feature = KL.TimeDistributed(KL.Conv2D(reduc_dim, (1, 1)), name="obj_feat_reduce_conv1")(
             object_feat)
         obj_feature = KL.TimeDistributed(BatchNorm(), name='obj_feat_reduce_bn1')(obj_feature, training=config.TRAIN_BN)
         obj_feature = KL.Activation('relu')(obj_feature)
@@ -229,17 +224,17 @@ def build_saliency_rank_model(config, mode, train_mode=None):
         # ------------------------- POSITIONAL ENCODING
         obj_feature = KL.Concatenate()([obj_feature, spatial_mask_feat])
 
-        # FC layer for reducing the Object + SMM
-        obj_feature = KL.TimeDistributed(KL.Dense(config.BOTTLE_NECK_SIZE), name="obj_feat_reduce_conv2")(obj_feature)
-        obj_feature = KL.TimeDistributed(BatchNorm(), name='obj_feat_reduce_bn2')(obj_feature, training=config.TRAIN_BN)
-        obj_feature = KL.Activation('relu')(obj_feature)
-        obj_feature = KL.TimeDistributed(KL.Dropout(dropout))(obj_feature)
-
         # ------------------------- SELECTIVE ATTENTION MODULE
-        sa_feat = selective_attention_module(config.NUM_ATTN_HEADS, obj_feature, img_feat, config, mode)
+        sa_feat = selective_attention_module(config.NUM_ATTN_HEADS, obj_feature, img_feat, config)
 
         # ------------------------- FINAL OBJECT FEATURE
-        final_obj_feat = KL.TimeDistributed(KL.Dense(config.RANK_FEAT_SIZE), name="obj_final_feat_dense_1")(sa_feat)
+
+        dim = config.RANK_FEAT_SIZE
+
+        dropout = 0.5
+
+        # FC layer for reducing the attention features
+        final_obj_feat = KL.TimeDistributed(KL.Dense(dim), name="obj_final_feat_dense_1")(sa_feat)
         final_obj_feat = KL.TimeDistributed(BatchNorm(), name='obj_final_feat_bn_1')(final_obj_feat, training=config.TRAIN_BN)
         final_obj_feat = KL.Activation('relu')(final_obj_feat)
         final_obj_feat = KL.TimeDistributed(KL.Dropout(dropout))(final_obj_feat)
@@ -329,21 +324,19 @@ def build_saliency_rank_model(config, mode, train_mode=None):
                                                               train_bn=config.TRAIN_BN)
 
         # *********************** PROCESS Image/P5 FEATURES ***********************
-        _, P3, P4, P5 = backbone_feat
-
-        p3_pooled = KL.GlobalAveragePooling2D()(P3)
-        p4_pooled = KL.GlobalAveragePooling2D()(P4)
-        p5_pooled = KL.GlobalAveragePooling2D()(P5)
-
-        img_feat = KL.Concatenate()([p3_pooled, p4_pooled, p5_pooled])
-
-        img_feat = KL.Dense(config.BOTTLE_NECK_SIZE, name="img_feat_dense_1")(img_feat)
+        img_feat = KL.Conv2D(config.BOTTLE_NECK_SIZE, (3, 3), name="img_feat_conv_1")(P5)
         img_feat = BatchNorm(name="img_feat_bn_1")(img_feat, training=config.TRAIN_BN)
         img_feat = KL.Activation('relu')(img_feat)
 
+        img_feat = KL.GlobalAveragePooling2D()(img_feat)
+
         # -------------------------
+
+        # -64 for concatenation with spatial masks
+        reduc_dim = config.BOTTLE_NECK_SIZE - 64
+
         # Reduce dimension to BOTTLNECK
-        obj_feature = KL.TimeDistributed(KL.Conv2D(config.BOTTLE_NECK_SIZE, (1, 1)), name="obj_feat_reduce_conv1")(
+        obj_feature = KL.TimeDistributed(KL.Conv2D(reduc_dim, (1, 1)), name="obj_feat_reduce_conv1")(
             object_feat)
         obj_feature = KL.TimeDistributed(BatchNorm(), name='obj_feat_reduce_bn1')(obj_feature, training=config.TRAIN_BN)
         obj_feature = KL.Activation('relu')(obj_feature)
@@ -358,17 +351,14 @@ def build_saliency_rank_model(config, mode, train_mode=None):
         # ------------------------- POSITIONAL ENCODING
         obj_feature = KL.Concatenate()([obj_feature, spatial_mask_feat])
 
-        # FC layer for reducing the Object + SMM
-        obj_feature = KL.TimeDistributed(KL.Dense(config.BOTTLE_NECK_SIZE), name="obj_feat_reduce_conv2")(obj_feature)
-        obj_feature = KL.TimeDistributed(BatchNorm(), name='obj_feat_reduce_bn2')(obj_feature, training=config.TRAIN_BN)
-        obj_feature = KL.Activation('relu')(obj_feature)
-
         # ------------------------- SELECTIVE ATTENTION MODULE
-        sa_feat = selective_attention_module(config.NUM_ATTN_HEADS, obj_feature, img_feat, config, mode)
+        sa_feat = selective_attention_module(config.NUM_ATTN_HEADS, obj_feature, img_feat, config)
 
         # ------------------------- FINAL OBJECT FEATURE
+        dim = config.RANK_FEAT_SIZE
+
         # FC layer for reducing the attention features
-        final_obj_feat = KL.TimeDistributed(KL.Dense(config.RANK_FEAT_SIZE), name="obj_final_feat_dense_1")(sa_feat)
+        final_obj_feat = KL.TimeDistributed(KL.Dense(dim), name="obj_final_feat_dense_1")(sa_feat)
         final_obj_feat = KL.TimeDistributed(BatchNorm(), name='obj_final_feat_bn_1')(final_obj_feat,
                                                                                      training=config.TRAIN_BN)
         final_obj_feat = KL.Activation('relu')(final_obj_feat)
