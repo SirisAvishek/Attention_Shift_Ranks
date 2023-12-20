@@ -26,7 +26,7 @@ python train.py
 
 ## Testing
 
-Generate predicted Saliency Rank Maps (rank based on grayscale value). You can download the weights of the trained model from [google drive](https://drive.google.com/file/d/1sKYImfNIk8tbDA8px391HH9Ig_t6fsGP/view?usp=drive_link).
+Generate predicted Saliency Rank Maps (rank based on grayscale value). You can download the weights of the trained model from [google drive](https://drive.google.com/file/d/1s2LkviY6Lepe2Ve-q1E0WfCY26YjExts/view?usp=sharing).
 Set data paths and run:
 ```
 python predict_and_generate_saliency_map.py
