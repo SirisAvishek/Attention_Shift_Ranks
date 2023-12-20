@@ -294,50 +294,51 @@ def perform_attention_image_object(head_idx, proj_feat_size, obj_feat, img_feat,
     return attn
 
 
-def selective_attention_module(num_heads, obj_feat, img_feat, config, mode):
-    cross_attn_obj_img_head_outputs = []
-    cross_attn_img_obj_head_outputs = []
-
+def selective_attention_module(num_heads, obj_feat, img_feat, config):
+    head_outputs = []
     for h in range(num_heads):
+        theta_dense_name = "head_" + str(h) + "_obj_theta_dense_1"
+        theta_bn_name = "head_" + str(h) + "_obj_theta_bn_1"
+        phi_dense_name = "head_" + str(h) + "_img_phi_dense_1"
+        phi_bn_name = "head_" + str(h) + "_img_phi_bn_1"
+        g_dense_name = "head_" + str(h) + "_img_g_dense_1"
+        g_bn_name = "head_" + str(h) + "_img_g_bn_1"
+
         proj_feat_size = config.BOTTLE_NECK_SIZE // num_heads
 
-        # Object - Image
-        obj_img_attn = perform_attention_object_image(h, proj_feat_size, obj_feat, img_feat, config)
-        cross_attn_obj_img_head_outputs.append(obj_img_attn)
+        # Project features
+        obj_theta = KL.TimeDistributed(KL.Dense(proj_feat_size), name=theta_dense_name)(obj_feat)
+        obj_theta = KL.TimeDistributed(BatchNorm(), name=theta_bn_name)(obj_theta, training=config.TRAIN_BN)
+        img_phi = KL.Dense(proj_feat_size, name=phi_dense_name)(img_feat)
+        img_phi = BatchNorm(name=phi_bn_name)(img_phi, training=config.TRAIN_BN)
+        img_g = KL.Dense(proj_feat_size, name=g_dense_name)(img_feat)
+        img_g = BatchNorm(name=g_bn_name)(img_g, training=config.TRAIN_BN)
 
-        # Image - Object
-        img_obj_attn = perform_attention_image_object(h, proj_feat_size, obj_feat, img_feat, config)
-        cross_attn_img_obj_head_outputs.append(img_obj_attn)
+        # Repeat Vectors
+        img_phi = KL.RepeatVector(config.TOP_K_DETECTION)(img_phi)
+        img_g = KL.RepeatVector(config.TOP_K_DETECTION)(img_g)
 
-    # Concatenate Heads
-    cross_attn_obj_img = KL.Concatenate()(cross_attn_obj_img_head_outputs) if num_heads > 1 \
-        else cross_attn_obj_img_head_outputs[0]
+        attn_name = "attn_layer_" + str(h)
+        attn = AttentionLayer(config, name=attn_name)([obj_theta, img_phi, img_g])
 
-    cross_attn_img_obj = KL.Concatenate()(cross_attn_img_obj_head_outputs) if num_heads > 1 \
-        else cross_attn_img_obj_head_outputs[0]
+        head_outputs.append(attn)
+
+    final_attn = KL.Concatenate()(head_outputs) if num_heads > 1 else head_outputs[0]
 
     # Linear
-    cross_attn_obj_img = KL.TimeDistributed(KL.Dense(config.BOTTLE_NECK_SIZE),
-                                            name='obj_caOI_feat_dense_1')(cross_attn_obj_img)
-    cross_attn_obj_img = KL.TimeDistributed(BatchNorm(),
-                                            name='obj_caOI_feat_bn_1')(cross_attn_obj_img, training=config.TRAIN_BN)
+    final_attn = KL.TimeDistributed(KL.Dense(config.BOTTLE_NECK_SIZE), name='obj_attn_feat_dense_1')(final_attn)
+    final_attn = KL.TimeDistributed(BatchNorm(), name='obj_attn_feat_bn_1')(final_attn, training=config.TRAIN_BN)
 
-    cross_attn_img_obj = KL.TimeDistributed(KL.Dense(config.BOTTLE_NECK_SIZE),
-                                            name='obj_caIO_feat_dense_1')(cross_attn_img_obj)
-    cross_attn_img_obj = KL.TimeDistributed(BatchNorm(),
-                                            name='obj_caIO_feat_bn_1')(cross_attn_img_obj, training=config.TRAIN_BN)
-
-    final_attn = KL.Multiply()([cross_attn_obj_img, cross_attn_img_obj])
-
+    # Add Residual
     final_attn = KL.Add()([final_attn, obj_feat])
 
     # Feed_forward
-    final_attn = KL.TimeDistributed(KL.Dense(config.BOTTLE_NECK_SIZE), name="obj_attn_feat_ff_dense_1")(final_attn)
-    final_attn = KL.TimeDistributed(BatchNorm(), name='obj_attn_feat_ff_bn_1')(final_attn, training=config.TRAIN_BN)
-    final_attn = KL.Activation('relu')(final_attn)
+    final_obj_feat = KL.TimeDistributed(KL.Dense(config.BOTTLE_NECK_SIZE), name="obj_attn_feat_ff_dense_1")(final_attn)
+    final_obj_feat = KL.TimeDistributed(BatchNorm(), name='obj_attn_feat_ff_bn_1')(final_obj_feat,
+                                                                                   training=config.TRAIN_BN)
+    final_obj_feat = KL.Activation('relu')(final_obj_feat)
 
-    if mode == "training":
-        dropout = 0.5
-        final_attn = KL.TimeDistributed(KL.Dropout(dropout))(final_attn)
+    dropout = 0.5
+    final_obj_feat = KL.TimeDistributed(KL.Dropout(dropout))(final_obj_feat)
 
-    return final_attn
+    return final_obj_feat
