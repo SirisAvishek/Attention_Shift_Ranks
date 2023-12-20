@@ -35,7 +35,7 @@ if __name__ == '__main__':
     log_path = "logs/"
     mode = "inference"
 
-    keras_model = Test_Model.build_saliency_rank_model(config, mode)
+    keras_model = Test_Model.build_saliency_rank_model(config, mode, mode)
     model = ASSRNet(mode=mode, config=config, model_dir=log_path, keras_model=keras_model, model_name=model_name)
 
     # ********** Create Datasets
