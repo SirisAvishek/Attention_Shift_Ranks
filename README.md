@@ -1,5 +1,5 @@
 
-# ***The project to the IJCV Extension of this paper is in the following [Inferring Attention Shifts for Salient Instance Ranking](https://github.com/SirisAvishek/Attention_Shift_Ranks_IJCV_Extension).
+# ***The project to the IJCV Extension of this paper is in the following link [Inferring Attention Shifts for Salient Instance Ranking](https://github.com/SirisAvishek/Attention_Shift_Ranks_IJCV_Extension).
 
 
 
@@ -32,36 +32,6 @@ month = {June},
 year = {2020}
 }
 ```
-
-
----
----
-
-
-# Inferring Attention Shifts for Salient Instance Ranking [IJCV 2023]
-
-### Authors:
-Avishek Siris, Jianbo Jiao, Gary K.L. Tam, Xianghua Xie, Rynson W.H. Lau
-
-+ PDF: [Paper](https://link.springer.com/content/pdf/10.1007/s11263-023-01906-7.pdf)
-
-## Abstract
-The human visual system has limited capacity in simultaneously processing multiple visual inputs. Consequently, humans rely on shifting their attention from one location to another. When viewing an image of complex scenes, psychology studies and behavioural observations show that humans prioritise and sequentially shift attention among multiple visual stimuli. In this paper, we propose to predict the saliency rank of multiple objects by inferring human attention shift. We first construct a new large-scale salient object ranking dataset, with the saliency rank of objects defined by the order that an observer attends to these objects via attention shift. We then propose a new deep learning-based model to leverage both bottom-up and top-down attention mechanisms for saliency rank prediction. Our model includes three novel modules: Spatial Mask Module (SMM), Selective Attention Module (SAM) and Salient Instance Edge Module (SIEM). SMM integrates bottom-up and semantic object properties to enhance contextual object features, from which SAM learns the dependencies between object features and image features for saliency reasoning. SIEM is designed to improve segmentation of salient objects, which helps further improve their rank predictions. Experimental results show that our proposed network achieves state-of-the-art performances on the salient object ranking task across multiple datasets.
-
-# Citation
-```
-@article{siris2023inferring,
-  title={Inferring Attention Shifts for Salient Instance Ranking},
-  author={Siris, Avishek and Jiao, Jianbo and Tam, Gary KL and Xie, Xianghua and Lau, Rynson WH},
-  journal={International Journal of Computer Vision},
-  pages={1--23},
-  year={2023},
-  publisher={Springer}
-}
-```
-
-
-
 
 
 
